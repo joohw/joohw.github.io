@@ -9,51 +9,89 @@ const email = (
   </a>
 );
 
-const overview = {
-  heading: "从草图到可以亲手试的东西",
-  description: "我做设计，也写代码。很多界面上的问题，只有做出来、用过一遍，才知道该怎么改。这个站点用来放这些实验和笔记。",
-};
+const contactParagraphs = [
+  "If you have a question about a project or a thought about something I've written, I'd love to hear from you.",
+  "Tell me which project or post caught your attention and what made you curious. I'd also like to hear how you've approached similar problems in your own work.",
+];
+
+const overview = [
+  {
+    heading: "About me",
+    paragraphs: [
+      "I'm Joo Hwang, an independent designer and full-stack engineer. I build digital products from the first sketch through launch.",
+      "Working across design and code lets me test an idea in the browser while it's still taking shape. I can sketch a layout, build enough of it to try on a phone, and use what I see to decide what to change next.",
+    ],
+  },
+  {
+    heading: "Why blog",
+    paragraphs: [
+      "I started this blog to keep track of how my projects change while I'm building them. By the time something ships, it's easy to forget which ideas I tried first and what made me change direction.",
+      "I'll share early prototypes, explain the trade-offs behind decisions, and revisit them after launch. Writing those details down gives me something concrete to look back on when I run into a similar problem again.",
+    ],
+  },
+];
 
 const sections = [
   {
     id: "projects",
-    title: "项目",
-    heading: "用滚动组织一座个人站",
-    description: "同一个深蓝植物场景把自我介绍和正文连在一起。向下滚动时，右上角出现导航标签。",
-    featured: true,
+    title: "Projects",
+    heading: "Designing a personal site around scrolling",
+    paragraphs: [
+      "Deep-blue foliage frames the introduction and the reading area. Scroll down to reveal the navigation in the upper-right corner.",
+    ],
+    featured: {
+      heading: "Projects",
+      paragraphs: [
+        "This is where I share the digital products and browser experiments I design and build. Alongside the work itself, I share the idea I wanted to test and how it took shape in the browser.",
+        "The site you're reading is one of those projects. I wanted the opening to feel like an illustration and used the first stretch of scrolling to bring the navigation and reading area into view.",
+      ],
+    },
     content: (
       <>
         <p>
-          首屏只显示姓名和简介。往下滚时，它们移到左上角，右上角的标签可以切换栏目。
+          The opening screen shows my name and a short introduction. As you scroll, they move to the upper-left corner and links to each section appear on the right.
         </p>
         <p>
-          再往下，正文从下方滚进视野。插画里的枝条停在原处，叶尖随着微风轻轻偏转。
+          Keep scrolling and the main content comes into view from below. The branches stay still while the leaf tips sway in a light breeze.
         </p>
       </>
     ),
   },
   {
     id: "writing",
-    title: "文章",
-    heading: "手绘排线怎样进了浏览器",
-    description: "在本站的早期版本里，我用 Canvas 重画了旧作品集里的手绘排线。",
-    featured: true,
+    title: "Writing",
+    heading: "Bringing hand-drawn hatching to the browser",
+    paragraphs: [
+      "In an earlier version of this site, I used Canvas to recreate the hand-drawn hatching from my old portfolio.",
+    ],
+    featured: {
+      heading: "Writings",
+      paragraphs: [
+        "I write about product design and development through the details I encounter while building. I like to trace a choice from the effect I wanted on screen to the code that made it possible.",
+        "In one piece, I explain how I recreated the hand-drawn hatching from my old portfolio in Canvas. Small changes in stroke angle and spacing gave it variation, and a fixed random seed kept the pattern consistent between visits at the same canvas size.",
+      ],
+    },
     content: (
       <>
         <p>
-          先把排线分成竖列，再给每一列里的线条安排不同的斜率、间距和断点。生成过程使用固定种子，同样的画布尺寸每次打开都会画出同一张纹理。
+          I grouped the strokes into vertical columns and varied their angles, spacing, and breaks. A fixed random seed kept the texture identical each time the page loaded at the same canvas size.
         </p>
         <p>
-          当时滚进阅读区时，程序会复用画好的纹理，让各列沿不同方向、以不同速度移动。流动结束后，排线留作阅读区的背景。
+          As you scrolled into the reading area, the site reused the rendered texture, moving the columns in different directions and at different speeds. Once the motion stopped, the hatching stayed in place as the background.
         </p>
       </>
     ),
   },
   {
     id: "contact",
-    title: "联系",
-    heading: "给我写封邮件",
-    description: "如果你对这里的项目或文章有想法，欢迎写信交流。",
+    title: "Contact",
+    heading: "Send me an email",
+    paragraphs: contactParagraphs,
+    featured: {
+      heading: "Contact me",
+      paragraphs: contactParagraphs,
+      inlineContent: true,
+    },
     content: email,
   },
 ];

@@ -1,4 +1,4 @@
-# 设计规范
+# Design Guidelines
 
-- 全站禁用中点（Unicode U+00B7），包括正文、导航、元数据和装饰元素。
-- 首页个人简介中的并列身份用中文逗号分隔。
+- Do not use the middle dot (Unicode U+00B7) anywhere on the site, including body text, navigation, metadata, and decorative elements.
+- Separate roles in the English homepage intro with a comma followed by a space.

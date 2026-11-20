@@ -2,22 +2,46 @@
 
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { BlogCanopy } from "./blog-canopy";
+import { BlogEntryRow } from "./blog-entry-row";
 import { BlogIntro } from "./blog-intro";
 
-type BlogSection = {
+type BlogCopy = {
+  heading: string;
+  paragraphs: string[];
+};
+
+type BlogSection = BlogCopy & {
   id: string;
   title: string;
-  heading: string;
-  description: string;
   content: ReactNode;
-  featured?: boolean;
+  featured?: BlogCopy & { inlineContent?: boolean };
 };
+
+function ReadingCopy({
+  heading,
+  paragraphs,
+  id,
+  compact = false,
+}: BlogCopy & { id?: string; compact?: boolean }) {
+  return (
+    <div className={compact ? "space-y-5" : "space-y-8 sm:space-y-12"}>
+      <h2 id={id} className="text-3xl font-light leading-tight tracking-tight sm:text-5xl">
+        {heading}
+      </h2>
+      <div className="space-y-4 text-base leading-loose text-muted-foreground sm:text-lg">
+        {paragraphs.map((paragraph) => (
+          <p key={paragraph}>{paragraph}</p>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export function BlogScroll({
   overview,
   sections,
 }: {
-  overview: Pick<BlogSection, "heading" | "description">;
+  overview: BlogCopy[];
   sections: BlogSection[];
 }) {
   const stageRef = useRef<HTMLDivElement>(null);
@@ -25,7 +49,7 @@ export function BlogScroll({
   const readingRef = useRef<HTMLElement>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const selected = sections.find(({ id }) => id === selectedId);
-  const reading = selected ?? overview;
+  const reading = selected ? [selected] : overview;
 
   useEffect(() => {
     const stage = stageRef.current;
@@ -65,7 +89,7 @@ export function BlogScroll({
 
       <nav
         ref={navRef}
-        aria-label="站点导航"
+        aria-label="Main navigation"
         className="blog-section-nav fixed z-20 flex flex-wrap justify-end gap-1 sm:gap-2"
       >
         {sections.map(({ id, title }) => (
@@ -88,20 +112,57 @@ export function BlogScroll({
         id="blog-selected-section"
         tabIndex={-1}
         aria-labelledby="blog-reading-title"
-        className="blog-reading relative z-10 min-h-dvh px-8 pb-16 pt-10 text-foreground sm:pt-16"
+        className={`blog-reading relative z-10 min-h-dvh px-8 text-foreground ${
+          selected ? "pb-16 pt-10 sm:pt-16" : "pb-32 pt-[clamp(7rem,20svh,15rem)] sm:pb-48"
+        }`}
       >
-        <div className="mx-auto max-w-5xl">
-          <div className="max-w-2xl space-y-5">
-            <h2 id="blog-reading-title" className="text-3xl font-light leading-tight tracking-tight sm:text-5xl">
-              {reading.heading}
-            </h2>
-            <p className="text-base leading-loose text-muted-foreground sm:text-lg">
-              {reading.description}
-            </p>
+        <div className="mx-auto max-w-2xl">
+          <div className="space-y-[clamp(12rem,38svh,30rem)]">
+            {reading.map(({ heading, paragraphs }, index) => (
+              <ReadingCopy
+                key={heading}
+                id={index === 0 ? "blog-reading-title" : undefined}
+                heading={heading}
+                paragraphs={paragraphs}
+                compact={Boolean(selected)}
+              />
+            ))}
+
+            {!selected && sections.map(({ id, title, heading, featured, content }) => {
+              if (!featured) return null;
+
+              const { inlineContent, ...copy } = featured;
+              const headingId = `blog-featured-${id}`;
+              const openSection = () => selectSection(id);
+
+              return (
+                <section key={id} aria-labelledby={headingId}>
+                  <ReadingCopy id={headingId} {...copy} />
+                  {inlineContent ? (
+                    <div className="mt-6 text-base text-muted-foreground sm:text-lg">{content}</div>
+                  ) : (
+                    <>
+                      <div className="mt-8">
+                        <BlogEntryRow label={title} heading={heading} onSelect={openSection} />
+                      </div>
+                      <button
+                        type="button"
+                        aria-label={`See more ${copy.heading.toLowerCase()}`}
+                        aria-controls="blog-selected-section"
+                        className="mt-2 inline-flex min-h-11 items-center text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+                        onClick={openSection}
+                      >
+                        See more
+                      </button>
+                    </>
+                  )}
+                </section>
+              );
+            })}
           </div>
 
-          {selected ? (
-            <div className="mt-10 max-w-2xl space-y-6">
+          {selected && (
+            <div className="mt-10 space-y-6">
               <div className="space-y-5 border border-foreground/20 bg-background/90 p-6 text-base leading-loose text-muted-foreground sm:p-8">
                 {selected.content}
               </div>
@@ -113,23 +174,8 @@ export function BlogScroll({
                   selectSection(null);
                 }}
               >
-                返回阅读首页
+                Back to overview
               </button>
-            </div>
-          ) : (
-            <div className="mt-10 grid gap-4 sm:mt-14 sm:grid-cols-2">
-              {sections.filter(({ featured }) => featured).map(({ id, title, heading, description }) => (
-                <button
-                  key={id}
-                  type="button"
-                  className="flex flex-col items-start gap-4 border border-foreground/20 bg-background/90 p-6 text-left hover:border-foreground/40 hover:bg-background focus-visible:outline-offset-4 sm:p-8"
-                  onClick={() => selectSection(id)}
-                >
-                  <span className="text-sm text-muted-foreground">{title}</span>
-                  <span className="text-xl font-light tracking-tight sm:text-2xl">{heading}</span>
-                  <span className="text-base leading-relaxed text-muted-foreground">{description}</span>
-                </button>
-              ))}
             </div>
           )}
         </div>

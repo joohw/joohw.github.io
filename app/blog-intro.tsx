@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 const blogName = "Joo Hwang";
-const blogTagline = "Bon Vivant，Designer，Coder";
+const blogTagline = "Bon Vivant, Designer, Coder";
 
 function AnimatedText({
   text,
@@ -14,7 +14,7 @@ function AnimatedText({
   startDelay?: number;
   letterDelay: number;
 }) {
-  const groups = text.match(/ +|[^ ，]+，?/g) ?? [];
+  const groups = text.match(/ +|[^ ]+/g) ?? [];
   let letterIndex = 0;
 
   return (

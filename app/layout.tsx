@@ -11,8 +11,8 @@ const portfolioSerif = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "个人博客",
-  description: "极简风格的个人博客",
+  title: "Joo Hwang's Blog",
+  description: "A minimalist personal blog by Joo Hwang.",
 };
 
 export default function RootLayout({
@@ -21,7 +21,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="zh-CN">
+    <html lang="en">
       <body className={portfolioSerif.className}>{children}</body>
     </html>
   );
