@@ -2,10 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: "Portfolio Serif";
+  src: url("/fonts/portfolio-serif.woff2") format("woff2");
+  font-weight: 250 900;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Source Han Serif CN";
+  src: url("/fonts/source-han-serif-cn.woff2") format("woff2");
+  font-weight: 250 900;
+  font-display: swap;
+  unicode-range: U+2E80-2FFF, U+3000-33FF, U+3400-9FFF, U+F900-FAFF, U+FE10-FE6F, U+FF00-FFEF, U+20000-2FFFF;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --foreground: 0 0% 6%;
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
@@ -15,7 +30,7 @@
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
     --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted-foreground: 0 0% 38%;
     --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
     --destructive: 0 84.2% 60.2%;
@@ -33,7 +48,7 @@
 
   .dark {
     --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --foreground: 0 0% 98%;
     --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
     --popover: 222.2 84% 4.9%;
@@ -43,7 +58,7 @@
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
     --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted-foreground: 0 0% 68%;
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
@@ -65,6 +80,177 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: "Portfolio Serif", "Source Han Serif CN", "Songti SC", SimSun, serif;
+  }
+
+  body:has(.blog-scroll) {
+    background-color: transparent;
+  }
+
+  ::selection {
+    background-color: hsl(var(--foreground) / 0.15);
+    color: hsl(var(--foreground));
+  }
+}
+
+.blog-scroll {
+  --background: 221 36% 13%;
+  --foreground: 0 0% 94%;
+  --muted-foreground: 0 0% 80%;
+  --blog-edge-inline: clamp(0.75rem, 2.5vw, 1.5rem);
+  --blog-edge-top: clamp(0.75rem, 2.5vw, 1.25rem);
+}
+
+.blog-scene {
+  background: #0e182b url("/images/indigo-canopy.webp") center / cover no-repeat;
+}
+
+.blog-scroll[data-leaf-hover] { cursor: grab; }
+.blog-scroll[data-leaf-grabbed] {
+  cursor: grabbing;
+  user-select: none;
+}
+.blog-scroll :is(a, button) { cursor: pointer; }
+
+@media (max-width: 639px) {
+  .blog-scene {
+    background-position: 78% center;
+  }
+}
+
+.blog-stage,
+.blog-section-nav,
+.blog-reading {
+  text-shadow: 0 1px 4px rgb(8 13 24 / 0.55);
+}
+
+.blog-stage {
+  --intro-progress: 0;
+}
+
+.blog-stage .blog-intro {
+  --intro-name-size: clamp(3.25rem, 12vw, 6rem);
+  position: fixed;
+  inset-inline: 0;
+  top: calc(50% + (var(--blog-edge-top) - 50%) * var(--intro-progress));
+  z-index: 20;
+  overflow-x: clip;
+  pointer-events: none;
+  transform: translateY(calc(-50% * (1 - var(--intro-progress))));
+}
+
+.blog-intro > :is(h1, p) {
+  position: relative;
+  left: calc(50% + (var(--blog-edge-inline) - 50%) * var(--intro-progress));
+  width: max-content;
+  max-width: calc(100% - 2 * var(--blog-edge-inline));
+  pointer-events: auto;
+  transform: translateX(calc(-50% * (1 - var(--intro-progress))));
+}
+
+.blog-intro > h1 {
+  font-size: calc(var(--intro-name-size) + (1.5rem - var(--intro-name-size)) * var(--intro-progress));
+}
+
+.blog-intro > p {
+  margin-top: calc(0.75rem - 0.5rem * var(--intro-progress));
+  font-size: calc(1rem - 0.25rem * var(--intro-progress));
+}
+
+.blog-section-nav {
+  top: var(--blog-edge-top);
+  right: var(--blog-edge-inline);
+  max-width: calc(100% - 1.5rem);
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.blog-section-nav[data-visible] {
+  visibility: visible;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .blog-section-nav[data-visible] {
+    animation: blog-nav-enter 200ms ease-out;
+  }
+}
+
+@keyframes blog-nav-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-0.375rem);
+  }
+}
+
+.blog-reading {
+  scroll-margin-top: 5rem;
+}
+
+@media (max-width: 420px) {
+  .blog-section-nav {
+    top: calc(var(--blog-edge-top) + 2.75rem);
+  }
+
+  .blog-reading {
+    scroll-margin-top: 6.5rem;
+  }
+}
+
+@media (scripting: none) {
+  .blog-stage .blog-intro {
+    position: absolute;
+  }
+}
+.intro-letter {
+  display: inline-block;
+}
+
+@media (prefers-reduced-motion: no-preference) and (scripting: enabled) {
+  .blog-intro[data-ready="false"] .intro-letter {
+    opacity: 0;
+  }
+
+  .blog-intro[data-ready="true"] .intro-letter {
+    animation-name: intro-letter-enter;
+    animation-duration: 620ms;
+    animation-timing-function: cubic-bezier(0.2, 0.65, 0.35, 1);
+    animation-fill-mode: backwards;
+  }
+
+  .intro-letter:nth-child(2n) {
+    --enter-x: 0.18em;
+    --enter-y: -0.7em;
+    --enter-angle: 9deg;
+    --overshoot: 0.08em;
+  }
+
+  .intro-letter:nth-child(3n) {
+    --enter-x: 0.08em;
+    --enter-y: 1.05em;
+    --enter-angle: 13deg;
+    --overshoot: -0.11em;
+  }
+}
+
+@keyframes intro-letter-enter {
+  from {
+    opacity: 0;
+    transform: translate(var(--enter-x, -0.22em), var(--enter-y, 0.85em))
+      rotate(var(--enter-angle, -12deg));
+  }
+
+  62% {
+    opacity: 1;
+    transform: translateY(var(--overshoot, -0.09em));
+  }
+
+  82% {
+    transform: translateY(calc(var(--overshoot, -0.09em) * -0.3));
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
