@@ -2,21 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@font-face {
-  font-family: "Portfolio Serif";
-  src: url("/fonts/portfolio-serif.woff2") format("woff2");
-  font-weight: 250 900;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Source Han Serif CN";
-  src: url("/fonts/source-han-serif-cn.woff2") format("woff2");
-  font-weight: 250 900;
-  font-display: swap;
-  unicode-range: U+2E80-2FFF, U+3000-33FF, U+3400-9FFF, U+F900-FAFF, U+FE10-FE6F, U+FF00-FFEF, U+20000-2FFFF;
-}
-
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -80,7 +65,6 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: "Portfolio Serif", "Source Han Serif CN", "Songti SC", SimSun, serif;
   }
 
   body:has(.blog-scroll) {

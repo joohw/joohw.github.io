@@ -3,11 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "fonts": "node scripts/build-fonts.mjs",
+    "predev": "npm run fonts",
     "dev": "next dev",
+    "prebuild": "npm run fonts",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "export": "next build"
+    "export": "npm run build"
   },
   "devDependencies": {
     "@types/node": "^24.10.0",
@@ -17,6 +20,7 @@
     "eslint": "^8.57.1",
     "eslint-config-next": "^15.0.0",
     "postcss": "^8.4.47",
+    "subset-font": "^2.9.0",
     "tailwindcss": "^3.4.13",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.9.3"
