@@ -7,7 +7,6 @@ import { rippleCount } from "./canopy-shaders";
 import assets from "./canopy-layers.json";
 
 const rippleDuration = 1250;
-const posterUrl = `/images/${assets.poster}`;
 
 export function BlogCanopy() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -17,8 +16,19 @@ export function BlogCanopy() {
     const shell = canvas?.closest<HTMLElement>("[data-blog-shell]");
     if (!canvas || !shell) return;
     const motion = window.matchMedia("(prefers-reduced-motion: no-preference)");
+    const local = ["localhost", "127.0.0.1", "[::1]"].includes(window.location.hostname);
+    const mode = new URLSearchParams(window.location.search).get("canopy");
+    const showLeafOutlines = local && mode === "outlines";
+
     const background = new Image();
-    const blades = new Image();
+    const leafImages = assets.leaves.map(() => new Image());
+    const [artWidth, artHeight] = assets.size;
+    const images: [HTMLImageElement, string, number, number][] = [
+      [background, assets.background, artWidth, artHeight],
+    ];
+    assets.leaves.forEach(({ texture, textureSize }, i) => {
+      images.push([leafImages[i], texture, textureSize[0], textureSize[1]]);
+    });
     const ripples: { x: number; y: number; started: number }[] = [];
     const drops = new Float32Array(rippleCount * 3);
     let createRenderer: typeof createCanopyRenderer | undefined;
@@ -58,9 +68,9 @@ export function BlogCanopy() {
             drops[index * 3 + 2] = Math.max(0, (now - started) / rippleDuration);
           });
         }
-        const drawn = renderer.draw(animate ? seconds : 0,
+        renderer.draw(animate ? seconds : 0,
           gestures.step(delta, !animate), animate && ripples.length ? drops : undefined);
-        canvas.style.visibility = drawn ? "visible" : "hidden";
+        canvas.style.visibility = "visible";
         lastFrame = now;
       }
       if (animate) frame = requestAnimationFrame(tick);
@@ -69,15 +79,15 @@ export function BlogCanopy() {
       cancelAnimationFrame(frame);
       frame = 0;
       if (lost || document.hidden || !motion.matches) ripples.length = 0;
-      if (!createRenderer || lost || !background.complete || !blades.complete ||
-          background.naturalWidth !== assets.size[0] || background.naturalHeight !== assets.size[1] ||
-          blades.naturalWidth !== assets.atlasSize[0] || blades.naturalHeight !== assets.atlasSize[1]) {
+      if (!createRenderer || lost || images.some(([image, , width, height]) =>
+        !image.complete || image.naturalWidth !== width || image.naturalHeight !== height,
+      )) {
         canvas.style.visibility = "hidden";
         return;
       }
       if (document.hidden) return;
       if (!renderer) {
-        renderer = createRenderer(canvas, background, blades);
+        renderer = createRenderer(canvas, background, leafImages, showLeafOutlines);
         renderer?.resize();
       }
       if (renderer) {
@@ -99,9 +109,10 @@ export function BlogCanopy() {
       if (renderer && !frame && !document.hidden) frame = requestAnimationFrame(tick);
     });
     observer.observe(canvas);
-    background.onload = blades.onload = sync;
-    background.src = `/images/${assets.background}`;
-    blades.src = `/images/${assets.atlas}`;
+    for (const [image, name] of images) {
+      image.onload = sync;
+      image.src = `/images/${name}`;
+    }
     canvas.addEventListener("webglcontextlost", onLoss);
     canvas.addEventListener("webglcontextrestored", onRestore);
     document.addEventListener("visibilitychange", sync);
@@ -110,16 +121,14 @@ export function BlogCanopy() {
       if (disposed) return;
       createRenderer = module.createCanopyRenderer;
       sync();
-    }, () => {
-      // The original illustration remains visible if the renderer cannot load.
-    });
+    }, () => { canvas.style.visibility = "hidden"; });
 
     return () => {
       disposed = true;
       gestures.dispose();
       cancelAnimationFrame(frame);
       observer.disconnect();
-      background.onload = blades.onload = null;
+      for (const [image] of images) image.onload = null;
       renderer?.dispose();
       canvas.style.visibility = "hidden";
       canvas.removeEventListener("webglcontextlost", onLoss);
@@ -133,7 +142,6 @@ export function BlogCanopy() {
     <div
       aria-hidden="true"
       className="blog-scene pointer-events-none fixed inset-0 -z-10"
-      style={{ backgroundImage: `url(${posterUrl})` }}
     >
       <canvas ref={canvasRef} data-canopy="" className="invisible absolute inset-0 h-full w-full" />
     </div>

@@ -124,7 +124,7 @@
 }
 
 .blog-scene {
-  background: #0e182b center / cover no-repeat;
+  background-color: #0e182b;
   filter: brightness(1.16);
 }
 
@@ -134,12 +134,6 @@
   user-select: none;
 }
 .blog-scroll :is(a, button) { cursor: pointer; }
-
-@media (max-width: 639px) {
-  .blog-scene {
-    background-position: 78% center;
-  }
-}
 
 .blog-header,
 .blog-section-nav,

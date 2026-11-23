@@ -13,23 +13,38 @@ export const sceneVertexShader = `
 export const backgroundFragmentShader = `
   uniform sampler2D painting;
   uniform vec2 artSize;
+  uniform float windTime;
   varying vec2 artPosition;
 
   void main() {
-    gl_FragColor = texture2D(painting, artPosition / artSize);
+    vec2 uv = artPosition / artSize;
+    vec4 still = texture2D(painting, uv);
+    vec2 fromCenter = abs(uv - 0.5);
+    float perimeter = smoothstep(0.20, 0.46, max(fromCenter.x, fromCenter.y));
+    float foliage = smoothstep(0.055, 0.16, dot(still.rgb, vec3(0.21, 0.72, 0.07)));
+    float t = windTime - 1.45 * uv.x - 0.4 * uv.y;
+    vec2 drift = vec2(sin(0.86 * t + 2.0 * uv.y), 0.44 * sin(0.72 * t - 2.2 * uv.x));
+    drift *= 1.35 * perimeter * foliage * smoothstep(0.0, 1.2, windTime);
+    gl_FragColor = texture2D(painting, uv - drift / artSize);
   }
 `;
 
 export const leafVertexShader = `
   uniform vec2 hinge, axis, offset;
-  uniform float lengthToTip;
+  uniform float bendLength;
+  uniform float pinnedLength;
+  uniform float spread;
   varying vec2 spriteUV;
 
   void main() {
     vec4 world = modelMatrix * vec4(position, 1.0);
     vec2 art = vec2(world.x, -world.y);
-    float reach = clamp(dot(art - hinge, axis) / lengthToTip, 0.0, 1.0);
-    vec2 bend = offset * reach * reach;
+    vec2 relative = art - hinge;
+    // Wide, lobed blades flex laterally while the radius around the petiole stays fixed.
+    float side = abs(dot(relative, vec2(-axis.y, axis.x)));
+    float along = min(length(relative), dot(relative, axis) + spread * side);
+    float reach = clamp((along - pinnedLength) / bendLength, 0.0, 1.0);
+    vec2 bend = offset * reach * sqrt(reach);
     world.xy += vec2(bend.x, -bend.y);
     spriteUV = vec2(uv.x, 1.0 - uv.y);
     gl_Position = projectionMatrix * viewMatrix * world;
@@ -37,14 +52,38 @@ export const leafVertexShader = `
 `;
 
 export const leafFragmentShader = `
-  uniform sampler2D sprites;
-  uniform vec4 atlasRegion;
+  uniform sampler2D leafImage;
   varying vec2 spriteUV;
 
   void main() {
-    vec4 leaf = texture2D(sprites, atlasRegion.xy + spriteUV * atlasRegion.zw);
+    vec4 leaf = texture2D(leafImage, spriteUV);
     if (leaf.a <= 0.0) discard;
     gl_FragColor = leaf;
+  }
+`;
+
+export const leafOutlineFragmentShader = `
+  uniform sampler2D leafImage;
+  varying vec2 spriteUV;
+
+  float leafCoverage(vec2 uv) {
+    if (any(lessThan(uv, vec2(0.0))) || any(greaterThanEqual(uv, vec2(1.0)))) return 0.0;
+    float alpha = texture2D(leafImage, uv).a;
+    return smoothstep(0.4, 0.6, alpha);
+  }
+
+  void main() {
+    vec2 dx = 1.25 * dFdx(spriteUV);
+    vec2 dy = 1.25 * dFdy(spriteUV);
+    float coverage = leafCoverage(spriteUV);
+    if (coverage <= 0.0) discard;
+    float nearby = min(
+      min(leafCoverage(spriteUV - dx), leafCoverage(spriteUV + dx)),
+      min(leafCoverage(spriteUV - dy), leafCoverage(spriteUV + dy))
+    );
+    float edge = coverage - nearby;
+    if (edge <= 0.0) discard;
+    gl_FragColor = vec4(0.80, 0.89, 1.0, 0.23 * edge);
   }
 `;
 
