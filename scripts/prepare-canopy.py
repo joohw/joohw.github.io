@@ -1,145 +1,197 @@
-"""Extract the painted canopy into an underpainting, leaf atlas and picking map.
+"""Rebuild animated leaf layers while preserving every visible pixel at rest."""
 
-Run with Python, Pillow, NumPy and OpenCV from any directory.
-"""
 import hashlib
 import json
+from collections import deque
+from io import BytesIO
 from pathlib import Path
 
-import cv2
-import numpy as np
-from PIL import Image
+from PIL import Image, ImageChops, ImageDraw, ImageFilter
+
 
 root = Path(__file__).resolve().parents[1]
-assets = root / "public/images"
-image = np.array(Image.open(assets / "indigo-canopy.webp").convert("RGB"))
-height, width = image.shape[:2]
-planes = json.loads((root / "scripts/canopy-strokes.json").read_text())
-groups = {}
-for plane in planes:
-    for stroke in plane["leaves"]:
-        key = stroke[6] if len(stroke) > 6 else len(groups) + 1
-        groups.setdefault(key, {"depth": plane["depth"], "strokes": []})["strokes"].append(stroke[:6])
+images = root / "public/images"
+source = json.loads(Path(__file__).with_name("canopy-source-layers.json").read_text(encoding="utf-8"))
+original = Image.open(images / source["image"]).convert("RGB")
+donor = Image.open(images / source["hiddenBackdrop"]).convert("RGB")
+masks = Image.open(images / source["atlas"]).getchannel("A")
+outlines = source.get("outlines", {})
+width, height = original.size
+rgb = original.tobytes()
+leaves = sorted(source["leaves"], key=lambda leaf: (leaf["depth"], leaf["id"]))
+rank = {leaf["id"]: index + 1 for index, leaf in enumerate(leaves)}
+rank[0] = 0
+underlap = 14
 
-cv2.setNumThreads(1)
-cv2.setRNGSeed(42)
-labels = np.zeros((height, width), np.uint8)
-best = np.zeros((height, width), np.float32)
-geometry = {}
-for index, group in enumerate(groups.values(), 1):
-    strokes = group["strokes"]
-    left = max(0, int(min(min(s[0], s[2]) - 2*s[4] - abs(s[5]) - 20 for s in strokes)))
-    right = min(width, int(max(max(s[0], s[2]) + 2*s[4] + abs(s[5]) + 20 for s in strokes)))
-    top = max(0, int(min(min(s[1], s[3]) - 2*s[4] - abs(s[5]) - 20 for s in strokes)))
-    bottom = min(height, int(max(max(s[1], s[3]) + 2*s[4] + abs(s[5]) + 20 for s in strokes)))
-    yy, xx = np.mgrid[top:bottom, left:right].astype(np.float32)
-    prior = np.zeros_like(xx)
-    for x,y,tx,ty,r,bend in strokes:
-        dx,dy = tx-x,ty-y
-        length = np.hypot(dx,dy)
-        t = ((xx-x)*dx + (yy-y)*dy) / length**2
-        u = np.clip(t,0,1)
-        side = (-(xx-x)*dy + (yy-y)*dx)/length - 4*u*(1-u)*bend
-        radius = r * np.maximum(0,np.sin(np.pi*u))**0.68 + 3
-        deviation = (side/radius)**2 + ((t-u)*length/9)**2
-        prior = np.maximum(prior, np.exp(-0.6*deviation))
 
-    rgb = image[top:bottom,left:right].copy()
-    light = cv2.cvtColor(rgb,cv2.COLOR_RGB2GRAY)
-    bark = rgb[:,:,0].astype(float) > rgb[:,:,1].astype(float) + 3
-    interior = (prior > 0.87) & ~bark
-    if not interior.any():
-        continue
-    light_floor = max(15, np.percentile(light[interior],60)*0.58)
-    markers = np.full(light.shape, cv2.GC_BGD, np.uint8)
-    markers[prior > 0.07] = cv2.GC_PR_BGD
-    markers[(prior > 0.44) & (light >= light_floor)] = cv2.GC_PR_FGD
-    seeds = interior & (light >= np.percentile(light[interior],55))
-    markers[seeds] = cv2.GC_FGD
-    markers[bark | (light < light_floor*0.82)] = cv2.GC_BGD
-    if not np.any(markers == cv2.GC_FGD):
-        continue
-    cv2.grabCut(rgb, markers, None, np.zeros((1,65)), np.zeros((1,65)), 3, cv2.GC_INIT_WITH_MASK)
-    fg = (markers & 1).astype(np.uint8)
-    n, components, stats, _ = cv2.connectedComponentsWithStats(fg)
-    connected = np.unique(components[seeds & (fg != 0)])
-    keep = np.isin(components, connected) & (fg != 0)
-    score = 0.6*prior + 0.45*group["depth"]
-    previous = best[top:bottom,left:right]
-    take = keep & (score > previous)
-    labels[top:bottom,left:right][take] = index
-    previous[take] = score[take]
+def register_outline(registration, leaf, outline):
+    # Pick up the original antialiased fringe immediately outside the trace.
+    # This keeps pale edges from staying on the backdrop when a leaf moves.
+    margin = 4
+    xs, ys = zip(*outline)
+    left, top = max(0, min(xs) - margin), max(0, min(ys) - margin)
+    right, bottom = min(width, max(xs) + margin + 1), min(height, max(ys) + margin + 1)
+    w, h = right - left, bottom - top
+    traced = Image.new("L", (w, h))
+    ImageDraw.Draw(traced).polygon([(x - left, y - top) for x, y in outline], fill=255)
+    core = traced.load()
+    edge = traced.filter(ImageFilter.MaxFilter(2 * margin + 1)).tobytes()
+    complete = traced.copy()
+    colors = original.load()
+    current = registration.load()
+    for index, near_outline in enumerate(edge):
+        x, y = index % w, index // w
+        if not near_outline or core[x, y]:
+            continue
+        color = colors[left + x, top + y]
+        if color[1] < 43 or color[0] > color[1] + 2 or color[2] < color[1] + 8:
+            continue
+        if rank[current[left + x, top + y]] >= rank[leaf["id"]]:
+            continue
+        if any(core[nx, ny] and sum(abs(a - b) for a, b in zip(color, colors[left + nx, top + ny])) <= 42
+               for ny in range(max(0, y - margin), min(h, y + margin + 1))
+               for nx in range(max(0, x - margin), min(w, x + margin + 1))):
+            complete.putpixel((x, y), 255)
 
-    x,y = strokes[0][:2]
-    tx,ty = max((s[2:4] for s in strokes), key=lambda p:np.hypot(p[0]-x,p[1]-y))
-    geometry[index] = {"id": index, "root": [x,y], "tip": [tx,ty], "depth": group["depth"]}
+    registration.paste(leaf["id"], (left, top, right, bottom), complete)
+    x0, y0, x1, y1 = complete.getbbox()
+    leaf["bounds"] = [left + x0, top + y0, x1 - x0, y1 - y0]
 
-# The broad left blade extends outside the artwork. Seed its complete edge so
-# the textured half above its midrib stays with the blade during a pull.
-left_blade = next(i for i, g in geometry.items() if g["tip"] == [424,224])
-outline = np.array([(0,290),(35,266),(88,249),(134,214),(186,198),(233,192),
-    (273,183),(319,190),(370,202),(425,225),(381,239),(345,260),(317,303),
-    (288,328),(242,345),(211,358),(192,395),(182,423),(155,440),(119,444),
-    (90,451),(76,474),(54,501),(19,517),(0,536)],np.int32)
-roi = image[158:550,:441].copy()
-shape = np.zeros(roi.shape[:2],np.uint8)
-cv2.fillPoly(shape,[outline-[0,158]],255)
-markers = np.zeros_like(shape)
-markers[cv2.dilate(shape,np.ones((27,27),np.uint8))>0] = cv2.GC_PR_BGD
-markers[shape>0] = cv2.GC_PR_FGD
-markers[cv2.erode(shape,np.ones((19,19),np.uint8))>0] = cv2.GC_FGD
-cv2.grabCut(roi,markers,None,np.zeros((1,65)),np.zeros((1,65)),3,cv2.GC_INIT_WITH_MASK)
-labels[labels==left_blade] = 0
-labels[158:550,:441][(markers & 1) != 0] = left_blade
 
-occupied = (labels > 0).astype(np.uint8)*255
-small = cv2.resize(image,None,fx=0.25,fy=0.25,interpolation=cv2.INTER_AREA)
-small_mask = cv2.resize(occupied,(small.shape[1],small.shape[0]),interpolation=cv2.INTER_AREA)
-under = cv2.inpaint(small,(small_mask>0).astype(np.uint8),4,cv2.INPAINT_TELEA)
-under = cv2.resize(under,(width,height),interpolation=cv2.INTER_CUBIC)
-under[occupied==0] = image[occupied==0]
-rim = occupied - cv2.erode(occupied,np.ones((15,15),np.uint8))
-under = cv2.inpaint(under,rim,3,cv2.INPAINT_TELEA)
+def register_visible_pixels():
+    labels = bytearray(width * height)
+    for leaf in leaves:
+        if str(leaf["id"]) in outlines:
+            continue
+        left, top, w, h = leaf["bounds"]
+        u, v = leaf["atlas"]
+        alpha = masks.crop((u, v, u + w, v + h)).tobytes()
+        for y in range(h):
+            start = (top + y) * width + left
+            for x in range(w):
+                if alpha[y * w + x] >= 128:
+                    labels[start + x] = leaf["id"]
+    registration = Image.frombytes("L", original.size, bytes(labels))
+    for leaf in leaves:
+        outline = outlines.get(str(leaf["id"]))
+        if outline:
+            register_outline(registration, leaf, outline)
+    return registration.tobytes()
 
-sprites = []
-for index, leaf in geometry.items():
-    ys,xs = np.where(labels==index)
-    if not xs.size:
-        continue
-    x,y = max(0,int(xs.min())-1),max(0,int(ys.min())-1)
-    x1,y1 = min(width,int(xs.max())+2),min(height,int(ys.max())+2)
-    alpha = (labels[y:y1,x:x1]==index).astype(np.uint8)*255
-    sprite = Image.fromarray(image[y:y1,x:x1])
-    sprite.putalpha(Image.fromarray(alpha))
-    leaf["bounds"] = [x,y,x1-x,y1-y]
-    sprites.append((leaf,sprite))
 
-atlas_width = 2048
-ax,ay,shelf = 2,2,0
-for leaf,sprite in sorted(sprites,key=lambda pair:-pair[1].height):
-    if ax+sprite.width+2 > atlas_width:
-        ax,ay,shelf = 2,ay+shelf+4,0
-    leaf["atlas"] = [ax,ay]
-    ax += sprite.width+4
-    shelf = max(shelf,sprite.height)
-atlas = Image.new("RGBA",(atlas_width,ay+shelf+2))
-for leaf,sprite in sprites:
-    atlas.paste(sprite,tuple(leaf["atlas"]))
-def publish_image(name, data, quality):
-    from io import BytesIO
-    stream = BytesIO()
-    data.save(stream,format="WEBP",quality=quality,method=5)
-    content = stream.getvalue()
-    filename = f"{name}-{hashlib.sha256(content).hexdigest()[:10]}.webp"
-    if not (assets/filename).exists():
-        (assets/filename).write_bytes(content)
+def complete_backdrop(labels):
+    # Only hidden pixels are filled. A normalized local average continues
+    # original color across exposed edges, with the leafless painting below it.
+    known = Image.frombytes("L", original.size, bytes(255 if label == 0 else 0 for label in labels))
+    blur = ImageFilter.GaussianBlur(4.5)
+    support = known.filter(blur).tobytes()
+    neighbors = [ImageChops.multiply(channel, known).filter(blur).tobytes() for channel in original.split()]
+    hidden = donor.tobytes()
+    pixels = bytearray(rgb)
+    for i, label in enumerate(labels):
+        if not label:
+            continue
+        weight = min(0.86, support[i] / 92)
+        for channel in range(3):
+            target = i * 3 + channel
+            nearby = min(255, neighbors[channel][i] * 255 / support[i]) if support[i] else 0
+            pixels[target] = round(hidden[target] + (nearby - hidden[target]) * weight)
+    return Image.frombytes("RGB", original.size, bytes(pixels))
+
+
+def complete_leaf(leaf, labels):
+    x, y, w, h = leaf["bounds"]
+    left, top = max(0, x - underlap), max(0, y - underlap)
+    right, bottom = min(width, x + w + underlap), min(height, y + h + underlap)
+    w, h = right - left, bottom - top
+    visible = leaf["id"]
+    depth = rank[visible]
+    region = [labels[(top + row) * width + left:(top + row) * width + right] for row in range(h)]
+    pixels = bytearray(w * h * 4)
+    queue = deque()
+
+    def hidden_neighbors(column, row):
+        for nx, ny in ((column - 1, row), (column + 1, row), (column, row - 1), (column, row + 1)):
+            if 0 <= nx < w and 0 <= ny < h and rank[region[ny][nx]] > depth:
+                yield nx, ny
+
+    for row in range(h):
+        for column in range(w):
+            if region[row][column] != visible:
+                continue
+            source_pixel = ((top + row) * width + left + column) * 3
+            target = (row * w + column) * 4
+            color = rgb[source_pixel:source_pixel + 3]
+            pixels[target:target + 4] = color + b"\xff"
+            for nx, ny in hidden_neighbors(column, row):
+                queue.append((nx, ny, color, 1))
+
+    # Extend a cutout only behind surfaces that cover it in the original.
+    # Its visible silhouette and color remain exactly the source pixels.
+    while queue:
+        column, row, color, distance = queue.popleft()
+        target = (row * w + column) * 4
+        if pixels[target + 3]:
+            continue
+        alpha = min(255, (underlap + 1 - distance) * 85)
+        pixels[target:target + 4] = color + bytes([alpha])
+        if distance < underlap:
+            for nx, ny in hidden_neighbors(column, row):
+                if not pixels[(ny * w + nx) * 4 + 3]:
+                    queue.append((nx, ny, color, distance + 1))
+
+    sprite = Image.frombytes("RGBA", (w, h), bytes(pixels))
+    crop = sprite.getbbox()
+    if crop is None:
+        raise ValueError(f"Leaf {visible} contains no source pixels")
+    sprite = sprite.crop(crop)
+    bounds = [left + crop[0], top + crop[1], sprite.width, sprite.height]
+    return {**leaf, "bounds": bounds}, sprite
+
+
+def pack_atlas(sprites):
+    width = 2048
+    x, y, row_height = 2, 2, 0
+    for leaf, sprite in sorted(sprites, key=lambda entry: -entry[1].height):
+        if x + sprite.width + 2 > width:
+            x, y, row_height = 2, y + row_height + 4, 0
+        leaf["atlas"] = [x, y]
+        x += sprite.width + 4
+        row_height = max(row_height, sprite.height)
+    atlas = Image.new("RGBA", (width, y + row_height + 2))
+    for leaf, sprite in sprites:
+        atlas.paste(sprite, tuple(leaf["atlas"]))
+    return atlas
+
+
+def publish(image, prefix):
+    output = BytesIO()
+    image.save(output, format="WEBP", method=4, lossless=True)
+    data = output.getvalue()
+    filename = f"{prefix}-{hashlib.sha256(data).hexdigest()[:10]}.webp"
+    (images / filename).write_bytes(data)
     return filename
 
-metadata = {
-    "underpaint": publish_image("canopy-paper", Image.fromarray(under),93),
-    "atlas": publish_image("canopy-leaves",atlas,95),
-    "atlasSize":list(atlas.size),
-    "leaves":[leaf for leaf,_ in sprites],
+
+if donor.size != original.size:
+    raise ValueError("The hidden backdrop must be registered to the original illustration")
+labels = register_visible_pixels()
+backdrop = complete_backdrop(labels)
+sprites = [complete_leaf(leaf, labels) for leaf in leaves]
+reconstructed = backdrop.convert("RGBA")
+for leaf, sprite in sprites:
+    reconstructed.alpha_composite(sprite, tuple(leaf["bounds"][:2]))
+if ImageChops.difference(reconstructed.convert("RGB"), original).getbbox() is not None:
+    raise ValueError("The separated layers do not reconstruct the original pixel for pixel")
+atlas = pack_atlas(sprites)
+
+manifest = {
+    "background": publish(backdrop, "canopy-layered-background"),
+    "atlas": publish(atlas, "canopy-layered-leaves"),
+    "size": original.size,
+    "atlasSize": atlas.size,
+    "leaves": [leaf for leaf, _ in sprites],
+    "poster": source["image"],
 }
-(root/"app/canopy-layers.json").write_text(json.dumps(metadata,separators=(",",":"))+"\n")
-print(f"Separated {len(sprites)} leaves into a {atlas.width} x {atlas.height} atlas")
+(root / "app/canopy-layers.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+print(f"Reconstructed {len(sprites)} transparent leaves with pixel-exact composition at rest.")

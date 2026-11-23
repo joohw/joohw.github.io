@@ -1,12 +1,19 @@
-import { canopyFrame } from "./canopy-mesh";
+import { canopyFrame } from "./canopy-frame";
 
 type Spring = { id: number; x: number; y: number; vx: number; vy: number; toX: number; toY: number };
 type Grab = { pointer: number; leaf: Spring; x: number; y: number; started: number; moved: boolean };
 
-export function bindCanopyGestures(main: HTMLElement, canvas: HTMLCanvasElement, pickBlade: (x: number, y: number) => number | null, wake: () => void) {
+export function bindCanopyGestures(
+  main: HTMLElement,
+  canvas: HTMLCanvasElement,
+  pickBlade: (x: number, y: number) => number | null,
+  wake: () => void,
+  ripple: (x: number, y: number) => void,
+) {
   const springs: Spring[] = [];
   const uniforms = new Float32Array(12);
   let grab: Grab | null = null;
+  let tap: { pointer: number; x: number; y: number } | null = null;
   let previous: { x: number; y: number } | null = null;
   let lastBrush = 0;
   const controls = "a,button,input,textarea,select,[contenteditable=true],h1,h2,h3,p";
@@ -61,12 +68,20 @@ export function bindCanopyGestures(main: HTMLElement, canvas: HTMLCanvasElement,
     wake();
   };
   const pointerDown = (event: PointerEvent) => {
-    if (event.pointerType !== "touch" && event.button === 0 && begin(event.pointerId, event.clientX, event.clientY, event.target)) {
+    if (!event.isPrimary) {
+      tap = null;
+      return;
+    }
+    if (event.button !== 0 || isControl(event.target)) return;
+    tap = { pointer: event.pointerId, x: event.clientX, y: event.clientY };
+    if (event.pointerType !== "touch" && begin(event.pointerId, event.clientX, event.clientY, event.target)) {
       event.preventDefault();
       main.setPointerCapture(event.pointerId);
     }
   };
+  const isTap = (event: PointerEvent) => tap !== null && Math.hypot(event.clientX - tap.x, event.clientY - tap.y) <= 8;
   const pointerMove = (event: PointerEvent) => {
+    if (tap?.pointer === event.pointerId && !isTap(event)) tap = null;
     if (event.pointerType === "touch") return;
     if (grab) {
       if (grab.pointer === event.pointerId) drag(event.clientX, event.clientY);
@@ -94,13 +109,22 @@ export function bindCanopyGestures(main: HTMLElement, canvas: HTMLCanvasElement,
     release();
   };
   const pointerUp = (event: PointerEvent) => {
+    if (tap?.pointer === event.pointerId) {
+      if (isTap(event) && !isControl(event.target) && !grab?.moved) ripple(event.clientX, event.clientY);
+      tap = null;
+    }
     if (grab?.pointer === event.pointerId) finish();
   };
   const pointerCancel = (event: PointerEvent) => {
+    if (tap?.pointer === event.pointerId) tap = null;
     if (grab?.pointer === event.pointerId) release();
   };
+  const cancel = () => {
+    tap = null;
+    release();
+  };
   const touchStart = (event: TouchEvent) => {
-    if (event.touches.length !== 1) { release(); return; }
+    if (event.touches.length !== 1) { cancel(); return; }
     const touch = event.touches[0];
     begin(-1, touch.clientX, touch.clientY, event.target);
   };
@@ -124,8 +148,8 @@ export function bindCanopyGestures(main: HTMLElement, canvas: HTMLCanvasElement,
   main.addEventListener("touchstart", touchStart, { passive: true });
   main.addEventListener("touchmove", touchMove, { passive: false });
   main.addEventListener("touchend", touchEnd);
-  main.addEventListener("touchcancel", release);
-  window.addEventListener("blur", release);
+  main.addEventListener("touchcancel", cancel);
+  window.addEventListener("blur", cancel);
   return {
     step(delta: number, reducedMotion: boolean) {
       uniforms.fill(0);
@@ -151,7 +175,7 @@ export function bindCanopyGestures(main: HTMLElement, canvas: HTMLCanvasElement,
     },
     release,
     dispose() {
-      release();
+      cancel();
       main.removeEventListener("pointerdown", pointerDown);
       main.removeEventListener("pointermove", pointerMove);
       main.removeEventListener("pointerup", pointerUp);
@@ -160,8 +184,8 @@ export function bindCanopyGestures(main: HTMLElement, canvas: HTMLCanvasElement,
       main.removeEventListener("touchstart", touchStart);
       main.removeEventListener("touchmove", touchMove);
       main.removeEventListener("touchend", touchEnd);
-      main.removeEventListener("touchcancel", release);
-      window.removeEventListener("blur", release);
+      main.removeEventListener("touchcancel", cancel);
+      window.removeEventListener("blur", cancel);
     },
   };
 }

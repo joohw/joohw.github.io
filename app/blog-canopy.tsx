@@ -1,60 +1,83 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { createCanopyRenderer } from "./canopy-renderer";
+import type { createCanopyRenderer } from "./canopy-renderer";
 import { bindCanopyGestures } from "./canopy-gestures";
+import { rippleCount } from "./canopy-shaders";
 import assets from "./canopy-layers.json";
+
+const rippleDuration = 1250;
+const posterUrl = `/images/${assets.poster}`;
 
 export function BlogCanopy() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    const main = canvas?.closest("main");
-    if (!canvas || !main) return;
+    const shell = canvas?.closest<HTMLElement>("[data-blog-shell]");
+    if (!canvas || !shell) return;
     const motion = window.matchMedia("(prefers-reduced-motion: no-preference)");
-    const underpainting = new Image();
+    const background = new Image();
     const blades = new Image();
+    const ripples: { x: number; y: number; started: number }[] = [];
+    const drops = new Float32Array(rippleCount * 3);
+    let createRenderer: typeof createCanopyRenderer | undefined;
     let renderer: ReturnType<typeof createCanopyRenderer> = null;
     let frame = 0;
     let lastFrame = 0;
     let seconds = 0;
-    let x = 0;
-    let y = 0;
-    let targetX = 0;
-    let targetY = 0;
     let lost = false;
+    let disposed = false;
 
-    const gestures = bindCanopyGestures(main, canvas, (x, y) => renderer?.pick(x, y) ?? null, () => {
+    const addRipple = (clientX: number, clientY: number) => {
+      if (!renderer || !motion.matches || document.hidden) return;
+      const box = canvas.getBoundingClientRect();
+      const x = (clientX - box.left) / box.width;
+      const y = (box.bottom - clientY) / box.height;
+      if (x < 0 || x > 1 || y < 0 || y > 1) return;
+      if (ripples.length === rippleCount) ripples.shift();
+      ripples.push({ x, y, started: performance.now() });
+    };
+    const gestures = bindCanopyGestures(shell, canvas, (x, y) => renderer?.pick(x, y) ?? null, () => {
       if (!frame && renderer && !document.hidden) frame = requestAnimationFrame(tick);
-    });
+    }, addRipple);
     const tick = (now: number) => {
       frame = 0;
       if (!renderer) return;
       const elapsed = now - lastFrame;
-      if (elapsed >= 30 || !motion.matches) {
+      const animate = motion.matches;
+      if (elapsed >= 30 || !animate) {
         const delta = Math.min(elapsed, 80) / 1000;
-        const catchUp = 1 - Math.exp(-delta * 5);
         seconds += delta;
-        x += (targetX - x) * catchUp;
-        y += (targetY - y) * catchUp;
-        renderer.draw(motion.matches ? seconds : 0, motion.matches ? x : 0, motion.matches ? y : 0,
-          gestures.step(delta, !motion.matches));
-        canvas.style.visibility = "visible";
+        while (ripples.length && now - ripples[0].started >= rippleDuration) ripples.shift();
+        if (ripples.length) {
+          drops.fill(1);
+          ripples.forEach(({ x, y, started }, index) => {
+            drops[index * 3] = x;
+            drops[index * 3 + 1] = y;
+            drops[index * 3 + 2] = Math.max(0, (now - started) / rippleDuration);
+          });
+        }
+        const drawn = renderer.draw(animate ? seconds : 0,
+          gestures.step(delta, !animate), animate && ripples.length ? drops : undefined);
+        canvas.style.visibility = drawn ? "visible" : "hidden";
         lastFrame = now;
       }
-      if (motion.matches) frame = requestAnimationFrame(tick);
+      if (animate) frame = requestAnimationFrame(tick);
     };
     const sync = () => {
       cancelAnimationFrame(frame);
       frame = 0;
-      if (lost || !underpainting.complete || !underpainting.naturalWidth || !blades.complete || !blades.naturalWidth) {
+      if (lost || document.hidden || !motion.matches) ripples.length = 0;
+      if (!createRenderer || lost || !background.complete || !blades.complete ||
+          background.naturalWidth !== assets.size[0] || background.naturalHeight !== assets.size[1] ||
+          blades.naturalWidth !== assets.atlasSize[0] || blades.naturalHeight !== assets.atlasSize[1]) {
         canvas.style.visibility = "hidden";
         return;
       }
       if (document.hidden) return;
       if (!renderer) {
-        renderer = createCanopyRenderer(canvas, underpainting, blades);
+        renderer = createRenderer(canvas, background, blades);
         renderer?.resize();
       }
       if (renderer) {
@@ -62,16 +85,12 @@ export function BlogCanopy() {
         frame = requestAnimationFrame(tick);
       }
     };
-    const pan = (event: PointerEvent) => {
-      if (event.pointerType === "touch" || main.hasAttribute("data-leaf-grabbed")) return;
-      targetX = (0.5 - event.clientX / window.innerWidth) * 10;
-      targetY = (0.5 - event.clientY / window.innerHeight) * 7;
-    };
-    const center = () => { targetX = targetY = 0; };
     const onLoss = (event: Event) => {
       event.preventDefault();
       lost = true;
+      renderer?.dispose();
       renderer = null;
+      gestures.release();
       sync();
     };
     const onRestore = () => { lost = false; sync(); };
@@ -80,37 +99,43 @@ export function BlogCanopy() {
       if (renderer && !frame && !document.hidden) frame = requestAnimationFrame(tick);
     });
     observer.observe(canvas);
-    underpainting.onload = blades.onload = sync;
-    underpainting.src = `/images/${assets.underpaint}`;
+    background.onload = blades.onload = sync;
+    background.src = `/images/${assets.background}`;
     blades.src = `/images/${assets.atlas}`;
     canvas.addEventListener("webglcontextlost", onLoss);
     canvas.addEventListener("webglcontextrestored", onRestore);
     document.addEventListener("visibilitychange", sync);
     motion.addEventListener("change", sync);
-    window.addEventListener("pointermove", pan, { passive: true });
-    document.documentElement.addEventListener("pointerleave", center);
-    window.addEventListener("blur", center);
+    void import("./canopy-renderer").then(module => {
+      if (disposed) return;
+      createRenderer = module.createCanopyRenderer;
+      sync();
+    }, () => {
+      // The original illustration remains visible if the renderer cannot load.
+    });
 
     return () => {
+      disposed = true;
       gestures.dispose();
       cancelAnimationFrame(frame);
       observer.disconnect();
-      underpainting.onload = blades.onload = null;
+      background.onload = blades.onload = null;
       renderer?.dispose();
       canvas.style.visibility = "hidden";
       canvas.removeEventListener("webglcontextlost", onLoss);
       canvas.removeEventListener("webglcontextrestored", onRestore);
       document.removeEventListener("visibilitychange", sync);
       motion.removeEventListener("change", sync);
-      window.removeEventListener("pointermove", pan);
-      document.documentElement.removeEventListener("pointerleave", center);
-      window.removeEventListener("blur", center);
     };
   }, []);
 
   return (
-    <div aria-hidden="true" className="blog-scene pointer-events-none fixed inset-0 -z-10">
-      <canvas ref={canvasRef} className="invisible block h-full w-full" />
+    <div
+      aria-hidden="true"
+      className="blog-scene pointer-events-none fixed inset-0 -z-10"
+      style={{ backgroundImage: `url(${posterUrl})` }}
+    >
+      <canvas ref={canvasRef} data-canopy="" className="invisible absolute inset-0 h-full w-full" />
     </div>
   );
 }

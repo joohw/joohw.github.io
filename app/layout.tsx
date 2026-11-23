@@ -11,6 +11,7 @@ const portfolioSerif = localFont({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://joohw.github.io"),
   title: "Joo Hwang's Blog",
   description: "A minimalist personal blog by Joo Hwang.",
 };

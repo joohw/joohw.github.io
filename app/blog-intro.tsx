@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 const blogName = "Joo Hwang";
 const blogTagline = "Bon Vivant, Designer, Coder";
@@ -43,7 +44,7 @@ function AnimatedText({
   );
 }
 
-export function BlogIntro() {
+export function BlogIntro({ home }: { home: boolean }) {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -65,8 +66,10 @@ export function BlogIntro() {
 
   return (
     <div className="blog-intro text-center" data-ready={ready}>
-      <h1 className="font-extralight leading-none tracking-tight">
-        <AnimatedText text={blogName} letterDelay={65} />
+      <h1 role={home ? undefined : "presentation"} className="font-extralight leading-none tracking-tight">
+        <Link href="/" className="focus-visible:outline-offset-4">
+          <AnimatedText text={blogName} letterDelay={65} />
+        </Link>
       </h1>
       <p className="leading-relaxed text-muted-foreground">
         <AnimatedText text={blogTagline} startDelay={510} letterDelay={28} />
