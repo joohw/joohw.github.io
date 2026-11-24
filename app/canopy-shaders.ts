@@ -24,13 +24,14 @@ export const backgroundFragmentShader = `
     float foliage = smoothstep(0.055, 0.16, dot(still.rgb, vec3(0.21, 0.72, 0.07)));
     float t = windTime - 1.45 * uv.x - 0.4 * uv.y;
     vec2 drift = vec2(sin(0.86 * t + 2.0 * uv.y), 0.44 * sin(0.72 * t - 2.2 * uv.x));
-    drift *= 1.35 * perimeter * foliage * smoothstep(0.0, 1.2, windTime);
+    drift *= 1.8 * perimeter * foliage * smoothstep(0.0, 1.2, windTime);
     gl_FragColor = texture2D(painting, uv - drift / artSize);
   }
 `;
 
 export const leafVertexShader = `
-  uniform vec2 hinge, axis, offset;
+  uniform vec2 hinge, axis, offset, artSize;
+  uniform float edgeBend;
   uniform float bendLength;
   uniform float pinnedLength;
   uniform float spread;
@@ -44,7 +45,10 @@ export const leafVertexShader = `
     float side = abs(dot(relative, vec2(-axis.y, axis.x)));
     float along = min(length(relative), dot(relative, axis) + spread * side);
     float reach = clamp((along - pinnedLength) / bendLength, 0.0, 1.0);
-    vec2 bend = offset * reach * sqrt(reach);
+    // Keep cropped stems inside the original frame as the free leaf tips swing farther.
+    vec2 edgeDistance = min(art, artSize - art);
+    float travel = edgeBend + max(0.0, min(edgeDistance.x, edgeDistance.y));
+    vec2 bend = offset * min(reach * sqrt(reach), travel / max(1.0, length(offset)));
     world.xy += vec2(bend.x, -bend.y);
     spriteUV = vec2(uv.x, 1.0 - uv.y);
     gl_Position = projectionMatrix * viewMatrix * world;

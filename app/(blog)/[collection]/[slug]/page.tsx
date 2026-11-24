@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { blogCollections, entryPath, findBlogCollection } from "@/lib/blog-content";
-import { BlogResourcePage } from "../../../blog-resource-page";
+import { BlogContentView } from "../../../blog-content-view";
 
 type EntryPageProps = {
   params: Promise<{ collection: string; slug: string }>;
@@ -37,12 +37,5 @@ export async function generateMetadata({ params }: EntryPageProps): Promise<Meta
 export default async function EntryPage({ params }: EntryPageProps) {
   const { collection, entry } = await getEntry(params);
 
-  return (
-    <BlogResourcePage heading={entry.heading} entryHref={entryPath(collection, entry)}>
-      <div className="space-y-4 text-base leading-loose text-muted-foreground sm:text-lg">
-        <p>{entry.description}</p>
-        {entry.paragraphs.map(paragraph => <p key={paragraph}>{paragraph}</p>)}
-      </div>
-    </BlogResourcePage>
-  );
+  return <BlogContentView collectionSlug={collection.slug} entrySlug={entry.slug} />;
 }

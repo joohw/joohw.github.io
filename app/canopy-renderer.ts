@@ -2,7 +2,7 @@ import {
   Group, LinearFilter, LinearMipmapLinearFilter, Mesh, OrthographicCamera, PlaneGeometry, Scene,
   ShaderMaterial, Texture, Vector2, WebGLRenderer, WebGLRenderTarget,
 } from "three";
-import { canopyFrame, maxCanopyBend } from "./canopy-frame";
+import { canopyFrame, edgeBend, maxCanopyBend } from "./canopy-frame";
 import { createLeafHitTest } from "./canopy-leaf-hit-test";
 import assets from "./canopy-layers.json";
 import {
@@ -80,6 +80,8 @@ export function createCanopyRenderer(
     const spread = leaf.spread ?? 0;
     const uniforms = {
       leafImage: { value: leafTextures[index] },
+      artSize: { value: artSize },
+      edgeBend: { value: edgeBend },
       hinge: { value: new Vector2(root[0], root[1]) },
       axis: { value: axis },
       bendLength: { value: length },
@@ -143,13 +145,21 @@ export function createCanopyRenderer(
   water.frustumCulled = false;
   rippleScene.add(water);
 
+  let viewWidth = 0, viewHeight = 0;
   return {
-    resize() {
+    resize(commitResolution: boolean) {
       const width = Math.max(1, canvas.clientWidth), height = Math.max(1, canvas.clientHeight);
-      const dpr = Math.min(3, window.devicePixelRatio || 1, Math.sqrt(8_294_400 / (width * height)));
-      const pixelWidth = Math.max(1, Math.round(width * dpr)), pixelHeight = Math.max(1, Math.round(height * dpr));
-      renderer.setSize(pixelWidth, pixelHeight, false);
-      reflection.setSize(pixelWidth, pixelHeight);
+      // During a live resize, CSS scales the last buffer while the camera tracks the viewport.
+      if (commitResolution || viewWidth === 0) {
+        const dpr = Math.min(3, window.devicePixelRatio || 1, Math.sqrt(8_294_400 / (width * height)));
+        const pixelWidth = Math.max(1, Math.round(width * dpr)), pixelHeight = Math.max(1, Math.round(height * dpr));
+        if (canvas.width !== pixelWidth || canvas.height !== pixelHeight) {
+          renderer.setSize(pixelWidth, pixelHeight, false);
+        }
+      }
+      if (width === viewWidth && height === viewHeight) return;
+      viewWidth = width;
+      viewHeight = height;
       const { scale, left, top } = canopyFrame(width, height);
       camera.left = -left / scale;
       camera.right = (width - left) / scale;
@@ -170,7 +180,7 @@ export function createCanopyRenderer(
         // A slow gust travels across the canopy. Each leaf adds a smaller
         // local bend; blades sharing a rachis have identical motion parameters.
         const t = seconds - 1.45 * root[0] / artWidth - 0.4 * root[1] / artHeight;
-        const strength = fade * Math.min(14.5, 4.2 + 0.54 * Math.sqrt(length));
+        const strength = 1.85 * fade * Math.min(14.5, 4.2 + 0.54 * Math.sqrt(length));
         const envelope = 0.74 + 0.26 * Math.sin(0.29 * t);
         const gust = strength * envelope * (0.85 * Math.sin(0.86 * t) + 0.20 * Math.sin(1.48 * t + 0.6));
         const flutter = strength * envelope * 0.16 * Math.sin(1.92 * t + motion * 2.39996);
@@ -182,6 +192,9 @@ export function createCanopyRenderer(
         offset.set(x * limit, y * limit);
       }
 
+      if (ripples && (reflection.width !== canvas.width || reflection.height !== canvas.height)) {
+        reflection.setSize(canvas.width, canvas.height);
+      }
       renderer.setRenderTarget(ripples ? reflection : null);
       renderer.render(scene, camera);
       if (ripples) {
@@ -202,12 +215,14 @@ export function createCanopyRenderer(
           continue;
         }
         let sourceX = x, sourceY = y;
+        const travel = Math.max(1, offset.length());
         for (let step = 0; step < 4; step++) {
           const dx = sourceX - leaf.root[0], dy = sourceY - leaf.root[1];
           const side = Math.abs(-dx * axis.y + dy * axis.x);
           const along = Math.min(Math.hypot(dx, dy), dx * axis.x + dy * axis.y + spread * side);
           const reach = Math.max(0, Math.min(1, (along - leaf.pin) / length));
-          const bend = reach * Math.sqrt(reach);
+          const edgeDistance = Math.max(0, Math.min(sourceX, artWidth - sourceX, sourceY, artHeight - sourceY));
+          const bend = Math.min(reach * Math.sqrt(reach), (edgeBend + edgeDistance) / travel);
           sourceX = x - offset.x * bend;
           sourceY = y - offset.y * bend;
         }

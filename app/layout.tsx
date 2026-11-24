@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { blogSiteMetadata } from "@/lib/blog-content";
 import "./globals.css";
 
 const portfolioSerif = localFont({
@@ -12,8 +13,7 @@ const portfolioSerif = localFont({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://joohw.github.io"),
-  title: "Joo Hwang's Blog",
-  description: "A minimalist personal blog by Joo Hwang.",
+  ...blogSiteMetadata.en,
 };
 
 export default function RootLayout({

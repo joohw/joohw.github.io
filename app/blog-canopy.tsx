@@ -7,6 +7,7 @@ import { rippleCount } from "./canopy-shaders";
 import assets from "./canopy-layers.json";
 
 const rippleDuration = 1250;
+const resizeSettleMs = 150;
 
 export function BlogCanopy() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -38,6 +39,9 @@ export function BlogCanopy() {
     let seconds = 0;
     let lost = false;
     let disposed = false;
+    let needsResize = true;
+    let resizeTimer: number | undefined;
+    let lastDpr = window.devicePixelRatio;
 
     const addRipple = (clientX: number, clientY: number) => {
       if (!renderer || !motion.matches || document.hidden) return;
@@ -48,15 +52,25 @@ export function BlogCanopy() {
       if (ripples.length === rippleCount) ripples.shift();
       ripples.push({ x, y, started: performance.now() });
     };
-    const gestures = bindCanopyGestures(shell, canvas, (x, y) => renderer?.pick(x, y) ?? null, () => {
+    const requestDraw = () => {
       if (!frame && renderer && !document.hidden) frame = requestAnimationFrame(tick);
-    }, addRipple);
+    };
+    const gestures = bindCanopyGestures(shell, canvas, (x, y) => renderer?.pick(x, y) ?? null, requestDraw, addRipple);
     const tick = (now: number) => {
       frame = 0;
       if (!renderer) return;
       const elapsed = now - lastFrame;
       const animate = motion.matches;
-      if (elapsed >= 30 || !animate) {
+      const settled = resizeTimer === undefined;
+      if (lastDpr !== window.devicePixelRatio) {
+        lastDpr = window.devicePixelRatio;
+        needsResize = true;
+      }
+      if (elapsed >= 30 || (settled && (!animate || needsResize))) {
+        if (needsResize) {
+          renderer.resize(settled);
+          needsResize = false;
+        }
         const delta = Math.min(elapsed, 80) / 1000;
         seconds += delta;
         while (ripples.length && now - ripples[0].started >= rippleDuration) ripples.shift();
@@ -73,7 +87,7 @@ export function BlogCanopy() {
         canvas.style.visibility = "visible";
         lastFrame = now;
       }
-      if (animate) frame = requestAnimationFrame(tick);
+      if (animate || needsResize) frame = requestAnimationFrame(tick);
     };
     const sync = () => {
       cancelAnimationFrame(frame);
@@ -86,11 +100,9 @@ export function BlogCanopy() {
         return;
       }
       if (document.hidden) return;
-      if (!renderer) {
-        renderer = createRenderer(canvas, background, leafImages, showLeafOutlines);
-        renderer?.resize();
-      }
+      if (!renderer) renderer = createRenderer(canvas, background, leafImages, showLeafOutlines);
       if (renderer) {
+        needsResize = true;
         lastFrame = performance.now() - 32;
         frame = requestAnimationFrame(tick);
       }
@@ -104,11 +116,30 @@ export function BlogCanopy() {
       sync();
     };
     const onRestore = () => { lost = false; sync(); };
-    const observer = new ResizeObserver(() => {
-      renderer?.resize();
-      if (renderer && !frame && !document.hidden) frame = requestAnimationFrame(tick);
-    });
+    const scheduleResize = () => {
+      needsResize = true;
+      window.clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(() => {
+        resizeTimer = undefined;
+        needsResize = true;
+        requestDraw();
+      }, resizeSettleMs);
+      requestDraw();
+    };
+    const observer = new ResizeObserver(scheduleResize);
     observer.observe(canvas);
+    // The fixed scene also changes physical size when only the display scale changes.
+    if ("devicePixelContentBoxSize" in ResizeObserverEntry.prototype && canvas.parentElement) {
+      observer.observe(canvas.parentElement, { box: "device-pixel-content-box" });
+    }
+    const displayResolution = () => window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
+    let resolution = displayResolution();
+    const onResolutionChange = () => {
+      resolution = displayResolution();
+      resolution.addEventListener("change", onResolutionChange, { once: true });
+      scheduleResize();
+    };
+    resolution.addEventListener("change", onResolutionChange, { once: true });
     for (const [image, name] of images) {
       image.onload = sync;
       image.src = `/images/${name}`;
@@ -127,6 +158,8 @@ export function BlogCanopy() {
       disposed = true;
       gestures.dispose();
       cancelAnimationFrame(frame);
+      window.clearTimeout(resizeTimer);
+      resolution.removeEventListener("change", onResolutionChange);
       observer.disconnect();
       for (const [image] of images) image.onload = null;
       renderer?.dispose();

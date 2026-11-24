@@ -1,6 +1,7 @@
 "use client";
 
 import { type KeyboardEvent, type PointerEvent, useEffect, useRef } from "react";
+import { useBlogLanguage } from "./blog-language";
 
 function pageScrollRange() {
   const root = document.scrollingElement ?? document.documentElement;
@@ -8,6 +9,7 @@ function pageScrollRange() {
 }
 
 export function BlogScrollbar() {
+  const { language } = useBlogLanguage();
   const trackRef = useRef<HTMLDivElement>(null);
   const thumbRef = useRef<HTMLDivElement>(null);
   const drag = useRef<{ pointer: number; offset: number } | null>(null);
@@ -91,7 +93,7 @@ export function BlogScrollbar() {
       className="blog-scrollbar"
       hidden
       role="scrollbar"
-      aria-label="Page scroll"
+      aria-label={language === "zh" ? "页面滚动" : "Page scroll"}
       aria-controls="blog-content"
       aria-orientation="vertical"
       aria-valuemin={0}

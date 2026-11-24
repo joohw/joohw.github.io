@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useBlogLanguage } from "./blog-language";
 
-const blogName = "Joo Hwang";
-const blogTagline = "Bon Vivant, Designer, Coder";
+export const blogName = "Joo Hwang";
 
 function AnimatedText({
   text,
@@ -45,6 +45,8 @@ function AnimatedText({
 }
 
 export function BlogIntro({ home }: { home: boolean }) {
+  const { language } = useBlogLanguage();
+  const chinese = language === "zh";
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -67,12 +69,12 @@ export function BlogIntro({ home }: { home: boolean }) {
   return (
     <div className="blog-intro text-center" data-ready={ready}>
       <h1 role={home ? undefined : "presentation"} className="font-extralight leading-none tracking-tight">
-        <Link href="/" className="focus-visible:outline-offset-4">
+        <Link href="/" aria-label={chinese ? `${blogName} 首页` : `${blogName} home`} className="focus-visible:outline-offset-4">
           <AnimatedText text={blogName} letterDelay={65} />
         </Link>
       </h1>
       <p className="leading-relaxed text-muted-foreground">
-        <AnimatedText text={blogTagline} startDelay={510} letterDelay={28} />
+        <AnimatedText text={chinese ? "生活家、设计师、程序员" : "Bon Vivant, Designer, Coder"} startDelay={510} letterDelay={28} />
       </p>
     </div>
   );

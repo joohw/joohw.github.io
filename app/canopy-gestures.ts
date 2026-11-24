@@ -16,7 +16,7 @@ export function bindCanopyGestures(
   let tap: { pointer: number; x: number; y: number } | null = null;
   let previous: { x: number; y: number } | null = null;
   let lastBrush = 0;
-  const controls = "a,button,input,textarea,select,[contenteditable=true],h1,h2,h3,p";
+  const controls = "nav,dialog,a,button,input,textarea,select,[contenteditable=true],h1,h2,h3,p";
   const isControl = (target: EventTarget | null) => target instanceof Element && Boolean(target.closest(controls));
   const local = (x: number, y: number) => {
     const box = canvas.getBoundingClientRect();

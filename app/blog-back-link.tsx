@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
+import { useBlogLanguage } from "./blog-language";
 
 export function useBlogBackHistory(pathname: string) {
   const previousPath = useRef<string | null>(null);
@@ -27,6 +28,7 @@ export function useBlogBackHistory(pathname: string) {
 export function BlogBackLink({ className }: { className: string }) {
   const router = useRouter();
   const pathname = usePathname();
+  const { language } = useBlogLanguage();
 
   return (
     <Link
@@ -41,7 +43,7 @@ export function BlogBackLink({ className }: { className: string }) {
         }
       }}
     >
-      Back
+      {language === "zh" ? "返回" : "Back"}
     </Link>
   );
 }
