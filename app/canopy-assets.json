@@ -1,0 +1,1111 @@
+{
+  "background": "canopy-delivery-base-cfdd9ac357.webp",
+  "size": [
+    1365,
+    768
+  ],
+  "leaves": [
+    {
+      "id": 116,
+      "motion": 0,
+      "root": [
+        0,
+        0
+      ],
+      "tip": [
+        1,
+        0
+      ],
+      "pin": 0,
+      "spread": 0,
+      "bounds": [
+        1151.4016454749437,
+        693.625,
+        62.46222887060583,
+        80.5
+      ],
+      "texture": "canopy-delivery-leaf-116-2a548ad6ee.webp",
+      "textureSize": [
+        143,
+        184
+      ]
+    },
+    {
+      "id": 117,
+      "motion": 0,
+      "root": [
+        0,
+        0
+      ],
+      "tip": [
+        1,
+        0
+      ],
+      "pin": 0,
+      "spread": 0,
+      "bounds": [
+        1305.99782844734,
+        550.6356453028973,
+        30.210640608034748,
+        223.6488147497805
+      ],
+      "texture": "canopy-delivery-leaf-117-9e2e70deb7.webp",
+      "textureSize": [
+        74,
+        549
+      ]
+    },
+    {
+      "id": 118,
+      "motion": 0,
+      "root": [
+        0,
+        0
+      ],
+      "tip": [
+        1,
+        0
+      ],
+      "pin": 0,
+      "spread": 0,
+      "bounds": [
+        1243.001620745543,
+        593.7597173144876,
+        73.75040518638573,
+        180.30035335689044
+      ],
+      "texture": "canopy-delivery-leaf-118-63bcdf2b1a.webp",
+      "textureSize": [
+        192,
+        471
+      ]
+    },
+    {
+      "id": 119,
+      "motion": 0,
+      "root": [
+        0,
+        0
+      ],
+      "tip": [
+        1,
+        0
+      ],
+      "pin": 0,
+      "spread": 0,
+      "bounds": [
+        1329.4168096054889,
+        491.78210116731515,
+        12.0926243567753,
+        282.4235686492496
+      ],
+      "texture": "canopy-delivery-leaf-119-695de1080e.webp",
+      "textureSize": [
+        47,
+        1095
+      ]
+    },
+    {
+      "id": 211,
+      "motion": 211,
+      "root": [
+        148,
+        -13
+      ],
+      "tip": [
+        106,
+        166
+      ],
+      "pin": 8,
+      "spread": 0,
+      "bounds": [
+        105.14226673907787,
+        -15.534718471233619,
+        45.0609714596048,
+        183.43313267688438
+      ],
+      "texture": "canopy-delivery-leaf-211-a9e0e03194.webp",
+      "textureSize": [
+        438,
+        1783
+      ]
+    },
+    {
+      "id": 302,
+      "motion": 302,
+      "root": [
+        34,
+        94
+      ],
+      "tip": [
+        99,
+        -20
+      ],
+      "pin": 9,
+      "spread": 0,
+      "bounds": [
+        18.90590150286671,
+        -21.095005887409172,
+        85.37507099715599,
+        116.02253238075045
+      ],
+      "texture": "canopy-delivery-leaf-302-2eaca7f42b.webp",
+      "textureSize": [
+        429,
+        583
+      ]
+    },
+    {
+      "id": 308,
+      "motion": 308,
+      "root": [
+        24,
+        105
+      ],
+      "tip": [
+        -55,
+        58
+      ],
+      "pin": 9,
+      "spread": 0,
+      "bounds": [
+        -58.13116299896358,
+        43.91202960353364,
+        82.94494480667466,
+        61.89505125069504
+      ],
+      "texture": "canopy-delivery-leaf-308-7286601247.webp",
+      "textureSize": [
+        595,
+        444
+      ]
+    },
+    {
+      "id": 1,
+      "motion": 0,
+      "root": [
+        0,
+        0
+      ],
+      "tip": [
+        1,
+        0
+      ],
+      "pin": 0,
+      "spread": 0,
+      "bounds": [
+        0,
+        0,
+        179.01309164149043,
+        201.64772727272728
+      ],
+      "texture": "canopy-delivery-leaf-1-ee05cc1140.webp",
+      "textureSize": [
+        808,
+        910
+      ]
+    },
+    {
+      "id": 3,
+      "motion": 0,
+      "root": [
+        0,
+        0
+      ],
+      "tip": [
+        1,
+        0
+      ],
+      "pin": 0,
+      "spread": 0,
+      "bounds": [
+        1128.7469387755102,
+        581.0409356725146,
+        236.2530612244898,
+        186.95906432748538
+      ],
+      "texture": "canopy-delivery-leaf-3-bbbe235f83.webp",
+      "textureSize": [
+        877,
+        695
+      ]
+    },
+    {
+      "id": 309,
+      "motion": 309,
+      "root": [
+        1141,
+        31
+      ],
+      "tip": [
+        1136,
+        -72
+      ],
+      "pin": 9,
+      "spread": 0,
+      "bounds": [
+        1096.409771393318,
+        -73.96973639552694,
+        50.04295062699497,
+        105.55934897881751
+      ],
+      "texture": "canopy-delivery-leaf-309-b138778490.webp",
+      "textureSize": [
+        320,
+        675
+      ]
+    },
+    {
+      "id": 310,
+      "motion": 310,
+      "root": [
+        1149,
+        -36
+      ],
+      "tip": [
+        1208,
+        38
+      ],
+      "pin": 9,
+      "spread": 0,
+      "bounds": [
+        1145.7740991108335,
+        -38.008937716589415,
+        60.743255603147574,
+        77.61638215957746
+      ],
+      "texture": "canopy-delivery-leaf-310-8df3821a7a.webp",
+      "textureSize": [
+        342,
+        437
+      ]
+    },
+    {
+      "id": 311,
+      "motion": 311,
+      "root": [
+        1255,
+        -45
+      ],
+      "tip": [
+        1371,
+        40
+      ],
+      "pin": 9,
+      "spread": 0,
+      "bounds": [
+        1251.4500925206776,
+        -52.357411677595735,
+        117.39935092656776,
+        95.5387821333448
+      ],
+      "texture": "canopy-delivery-leaf-311-d939eb1c23.webp",
+      "textureSize": [
+        435,
+        354
+      ]
+    },
+    {
+      "id": 312,
+      "motion": 0,
+      "root": [
+        0,
+        0
+      ],
+      "tip": [
+        1,
+        0
+      ],
+      "pin": 0,
+      "spread": 0,
+      "bounds": [
+        1058,
+        -5.2,
+        35,
+        20
+      ],
+      "texture": "canopy-delivery-leaf-312-7fdc6a30df.webp",
+      "textureSize": [
+        175,
+        100
+      ]
+    },
+    {
+      "id": 4,
+      "motion": 0,
+      "root": [
+        0,
+        0
+      ],
+      "tip": [
+        1,
+        0
+      ],
+      "pin": 0,
+      "spread": 0,
+      "bounds": [
+        1085.9142857142858,
+        0,
+        268.0408163265306,
+        188.57309941520467
+      ],
+      "texture": "canopy-delivery-leaf-4-5e00043251.webp",
+      "textureSize": [
+        995,
+        701
+      ]
+    },
+    {
+      "id": 28,
+      "motion": 28,
+      "root": [
+        298,
+        491
+      ],
+      "tip": [
+        548,
+        469
+      ],
+      "pin": 12,
+      "spread": 0,
+      "bounds": [
+        296.450733,
+        319.829968,
+        252.56990099999996,
+        195.26461199999994
+      ],
+      "texture": "canopy-delivery-leaf-28-605b6818d4.webp",
+      "textureSize": [
+        887,
+        686
+      ]
+    },
+    {
+      "id": 29,
+      "motion": 29,
+      "root": [
+        430,
+        588
+      ],
+      "tip": [
+        621,
+        541
+      ],
+      "pin": 10,
+      "spread": 0,
+      "bounds": [
+        427.67397020157756,
+        482.2165397170838,
+        202.12094653812446,
+        107.5701849836779
+      ],
+      "texture": "canopy-delivery-leaf-29-03cacc06ea.webp",
+      "textureSize": [
+        887,
+        473
+      ]
+    },
+    {
+      "id": 30,
+      "motion": 30,
+      "root": [
+        753,
+        748
+      ],
+      "tip": [
+        718,
+        573
+      ],
+      "pin": 16,
+      "spread": 0,
+      "bounds": [
+        603.7893805309734,
+        537.9935344827586,
+        260.40176991150446,
+        287.2866379310345
+      ],
+      "texture": "canopy-delivery-leaf-30-f7c55954a7.webp",
+      "textureSize": [
+        881,
+        973
+      ]
+    },
+    {
+      "id": 204,
+      "motion": 0,
+      "root": [
+        0,
+        0
+      ],
+      "tip": [
+        1,
+        0
+      ],
+      "pin": 0,
+      "spread": 0,
+      "bounds": [
+        1231,
+        683.6,
+        37,
+        9
+      ],
+      "texture": "canopy-delivery-leaf-204-2d02fa4638.webp",
+      "textureSize": [
+        185,
+        45
+      ]
+    },
+    {
+      "id": 21,
+      "motion": 21,
+      "root": [
+        1269,
+        687
+      ],
+      "tip": [
+        1202,
+        766
+      ],
+      "pin": 9,
+      "spread": 0,
+      "bounds": [
+        1197.0088852988692,
+        683.7532467532468,
+        79.51453957996769,
+        84.24675324675324
+      ],
+      "texture": "canopy-delivery-leaf-21-82a5f8b2a6.webp",
+      "textureSize": [
+        471,
+        499
+      ]
+    },
+    {
+      "id": 26,
+      "motion": 26,
+      "root": [
+        205,
+        330
+      ],
+      "tip": [
+        338,
+        338
+      ],
+      "pin": 48,
+      "spread": 0.65,
+      "bounds": [
+        0,
+        263.532999,
+        375.470687,
+        252.57121899999993
+      ],
+      "texture": "canopy-delivery-leaf-26-abd9d051c0.webp",
+      "textureSize": [
+        1147,
+        772
+      ]
+    },
+    {
+      "id": 304,
+      "motion": 304,
+      "root": [
+        1117,
+        26
+      ],
+      "tip": [
+        1071,
+        109
+      ],
+      "pin": 9,
+      "spread": 0,
+      "bounds": [
+        1063.0211403152002,
+        24.728478074978973,
+        55.67700278231462,
+        85.41185985406847
+      ],
+      "texture": "canopy-delivery-leaf-304-ea118f7ed1.webp",
+      "textureSize": [
+        367,
+        563
+      ]
+    },
+    {
+      "id": 305,
+      "motion": 305,
+      "root": [
+        1230,
+        81
+      ],
+      "tip": [
+        1281,
+        -38
+      ],
+      "pin": 9,
+      "spread": 0,
+      "bounds": [
+        1207.942124722613,
+        -39.11944166767886,
+        74.92718456983995,
+        122.32587315131327
+      ],
+      "texture": "canopy-delivery-leaf-305-c525875af9.webp",
+      "textureSize": [
+        362,
+        591
+      ]
+    },
+    {
+      "id": 306,
+      "motion": 306,
+      "root": [
+        1257,
+        94
+      ],
+      "tip": [
+        1267,
+        194
+      ],
+      "pin": 9,
+      "spread": 0,
+      "bounds": [
+        1241.015632241534,
+        92.0388493212566,
+        36.21200629033047,
+        101.28045509326803
+      ],
+      "texture": "canopy-delivery-leaf-306-db75a126a3.webp",
+      "textureSize": [
+        192,
+        537
+      ]
+    },
+    {
+      "id": 307,
+      "motion": 307,
+      "root": [
+        1279,
+        65
+      ],
+      "tip": [
+        1397,
+        118
+      ],
+      "pin": 9,
+      "spread": 0,
+      "bounds": [
+        1278.240528728112,
+        49.23854707040455,
+        120.05574026728122,
+        73.56356634024584
+      ],
+      "texture": "canopy-delivery-leaf-307-0ec2fbf2e9.webp",
+      "textureSize": [
+        612,
+        375
+      ]
+    },
+    {
+      "id": 22,
+      "motion": 22,
+      "root": [
+        1091,
+        18
+      ],
+      "tip": [
+        993,
+        71
+      ],
+      "pin": 8,
+      "spread": 0,
+      "bounds": [
+        990.8109965635739,
+        16.919999999999998,
+        103.78178694158076,
+        57.059999999999995
+      ],
+      "texture": "canopy-delivery-leaf-22-eeaba4869f.webp",
+      "textureSize": [
+        578,
+        317
+      ]
+    },
+    {
+      "id": 23,
+      "motion": 23,
+      "root": [
+        1205.65,
+        83.78
+      ],
+      "tip": [
+        1119.32,
+        132.28
+      ],
+      "pin": 8,
+      "spread": 0,
+      "bounds": [
+        1114.3083333333334,
+        80.45998043052836,
+        94.64685185185185,
+        57.448297455968685
+      ],
+      "texture": "canopy-delivery-leaf-23-4ab96c62e8.webp",
+      "textureSize": [
+        479,
+        291
+      ]
+    },
+    {
+      "id": 24,
+      "motion": 24,
+      "root": [
+        1254,
+        94
+      ],
+      "tip": [
+        1169,
+        200
+      ],
+      "pin": 8,
+      "spread": 0,
+      "bounds": [
+        1165.7197265625,
+        93.392578125,
+        97.15234375,
+        110.623046875
+      ],
+      "texture": "canopy-delivery-leaf-24-df00aeffa0.webp",
+      "textureSize": [
+        476,
+        542
+      ]
+    },
+    {
+      "id": 15,
+      "motion": 15,
+      "root": [
+        489,
+        616
+      ],
+      "tip": [
+        605,
+        758
+      ],
+      "pin": 15,
+      "spread": 0.28,
+      "bounds": [
+        366.756804214223,
+        529.4673913043479,
+        258.47410008779633,
+        238.53260869565216
+      ],
+      "texture": "canopy-delivery-leaf-15-9ff2020fa1.webp",
+      "textureSize": [
+        834,
+        770
+      ]
+    },
+    {
+      "id": 208,
+      "motion": 5,
+      "root": [
+        191,
+        20
+      ],
+      "tip": [
+        450,
+        230
+      ],
+      "pin": 18,
+      "spread": 0,
+      "bounds": [
+        134,
+        8,
+        94,
+        29
+      ],
+      "texture": "canopy-delivery-leaf-208-7ac7b5cab3.webp",
+      "textureSize": [
+        470,
+        145
+      ]
+    },
+    {
+      "id": 209,
+      "motion": 209,
+      "root": [
+        163,
+        24
+      ],
+      "tip": [
+        154.3,
+        161.6
+      ],
+      "pin": 8,
+      "spread": 0,
+      "bounds": [
+        153.58925830789903,
+        22.1214379503168,
+        23.15300759566836,
+        140.9811848647133
+      ],
+      "texture": "canopy-delivery-leaf-209-b7a1059714.webp",
+      "textureSize": [
+        202,
+        1230
+      ]
+    },
+    {
+      "id": 210,
+      "motion": 210,
+      "root": [
+        215.5,
+        15
+      ],
+      "tip": [
+        261.5,
+        157.6
+      ],
+      "pin": 8,
+      "spread": 0,
+      "bounds": [
+        214.43805872883829,
+        14.464237366077956,
+        52.80594593964968,
+        143.9536004528711
+      ],
+      "texture": "canopy-delivery-leaf-210-1a67b63d70.webp",
+      "textureSize": [
+        230,
+        627
+      ]
+    },
+    {
+      "id": 5,
+      "motion": 5,
+      "root": [
+        191,
+        20
+      ],
+      "tip": [
+        450,
+        230
+      ],
+      "pin": 18,
+      "spread": 0,
+      "bounds": [
+        161.66319165998397,
+        0,
+        328.3303929430634,
+        253.26991676575506
+      ],
+      "texture": "canopy-delivery-leaf-5-53d4eff265.webp",
+      "textureSize": [
+        918,
+        710
+      ]
+    },
+    {
+      "id": 6,
+      "motion": 5,
+      "root": [
+        191,
+        20
+      ],
+      "tip": [
+        450,
+        230
+      ],
+      "pin": 18,
+      "spread": 0,
+      "bounds": [
+        200.74950690335305,
+        0,
+        170.25049309664695,
+        213
+      ],
+      "texture": "canopy-delivery-leaf-6-385ce4ef87.webp",
+      "textureSize": [
+        826,
+        1034
+      ]
+    },
+    {
+      "id": 303,
+      "motion": 303,
+      "root": [
+        66,
+        78
+      ],
+      "tip": [
+        158,
+        141
+      ],
+      "pin": 9,
+      "spread": 0,
+      "bounds": [
+        63.99563323583975,
+        67.91737120572408,
+        95.01301536128854,
+        74.6912822446152
+      ],
+      "texture": "canopy-delivery-leaf-303-94ef8ab7a9.webp",
+      "textureSize": [
+        533,
+        419
+      ]
+    },
+    {
+      "id": 9,
+      "motion": 9,
+      "root": [
+        1108,
+        427
+      ],
+      "tip": [
+        763,
+        515
+      ],
+      "pin": 22,
+      "spread": 0,
+      "bounds": [
+        744.25,
+        319.75,
+        423.5,
+        206.25
+      ],
+      "texture": "canopy-delivery-leaf-9-d7d093a76e.webp",
+      "textureSize": [
+        1694,
+        825
+      ]
+    },
+    {
+      "id": 13,
+      "motion": 13,
+      "root": [
+        0,
+        383
+      ],
+      "tip": [
+        398,
+        174
+      ],
+      "pin": 10,
+      "spread": 0,
+      "bounds": [
+        0,
+        148.8394584139265,
+        402,
+        346.16054158607346
+      ],
+      "texture": "canopy-delivery-leaf-13-48eb60f5e5.webp",
+      "textureSize": [
+        1014,
+        873
+      ]
+    },
+    {
+      "id": 14,
+      "motion": 14,
+      "root": [
+        81,
+        558
+      ],
+      "tip": [
+        353,
+        751
+      ],
+      "pin": 19,
+      "spread": 0.32,
+      "bounds": [
+        0,
+        414.2831325301205,
+        383.7568850902184,
+        353.7168674698795
+      ],
+      "texture": "canopy-delivery-leaf-14-c1491e9f49.webp",
+      "textureSize": [
+        896,
+        827
+      ]
+    },
+    {
+      "id": 17,
+      "motion": 17,
+      "root": [
+        1322,
+        562
+      ],
+      "tip": [
+        1047,
+        230
+      ],
+      "pin": 12,
+      "spread": 0,
+      "bounds": [
+        1045.7470141150923,
+        225.55048287971906,
+        280.46905537459287,
+        336.8990342405619
+      ],
+      "texture": "canopy-delivery-leaf-17-c00bcdda5a.webp",
+      "textureSize": [
+        687,
+        827
+      ]
+    },
+    {
+      "id": 19,
+      "motion": 19,
+      "root": [
+        1328,
+        502
+      ],
+      "tip": [
+        1363,
+        168
+      ],
+      "pin": 10,
+      "spread": 0,
+      "bounds": [
+        1283.9536878216124,
+        162.41689827682046,
+        81.04631217838765,
+        338.90828237909955
+      ],
+      "texture": "canopy-delivery-leaf-19-61b5a44762.webp",
+      "textureSize": [
+        315,
+        1314
+      ]
+    },
+    {
+      "id": 18,
+      "motion": 18,
+      "root": [
+        1261,
+        605
+      ],
+      "tip": [
+        934,
+        445
+      ],
+      "pin": 14,
+      "spread": 0,
+      "bounds": [
+        927.226904376013,
+        416.5217903415783,
+        333.4132901134522,
+        189.10482921083627
+      ],
+      "texture": "canopy-delivery-leaf-18-b4e4c2fd84.webp",
+      "textureSize": [
+        868,
+        494
+      ]
+    },
+    {
+      "id": 16,
+      "motion": 16,
+      "root": [
+        1046,
+        622
+      ],
+      "tip": [
+        804,
+        748
+      ],
+      "pin": 28,
+      "spread": 0.32,
+      "bounds": [
+        773.060583395662,
+        502,
+        441.1667913238594,
+        266
+      ],
+      "texture": "canopy-delivery-leaf-16-74fb8c9946.webp",
+      "textureSize": [
+        1010,
+        608
+      ]
+    },
+    {
+      "id": 205,
+      "motion": 0,
+      "root": [
+        0,
+        0
+      ],
+      "tip": [
+        1,
+        0
+      ],
+      "pin": 0,
+      "spread": 0,
+      "bounds": [
+        1286,
+        614.2,
+        10,
+        5.2
+      ],
+      "texture": "canopy-delivery-leaf-205-ceea35e66f.webp",
+      "textureSize": [
+        50,
+        26
+      ]
+    },
+    {
+      "id": 207,
+      "motion": 207,
+      "root": [
+        1295,
+        617.7
+      ],
+      "tip": [
+        1195,
+        659
+      ],
+      "pin": 9,
+      "spread": 0,
+      "bounds": [
+        1194.170990855617,
+        605.8148155364022,
+        102.1330452705462,
+        54.26727334175746
+      ],
+      "texture": "canopy-delivery-leaf-207-25549c7763.webp",
+      "textureSize": [
+        702,
+        373
+      ]
+    },
+    {
+      "id": 20,
+      "motion": 20,
+      "root": [
+        1235,
+        685
+      ],
+      "tip": [
+        1103,
+        744
+      ],
+      "pin": 9,
+      "spread": 0,
+      "bounds": [
+        1097.4711538461538,
+        669.0032751091703,
+        140.3076923076923,
+        80.03602620087337
+      ],
+      "texture": "canopy-delivery-leaf-20-a4926f2eb0.webp",
+      "textureSize": [
+        768,
+        439
+      ]
+    }
+  ],
+  "poster": "canopy-delivery-poster-38d8daf184.webp",
+  "sourceDigest": "87d54b5af0b54e0ba72be701cb3b83ab09f1ca97db839733ab8c70b5b702fb94"
+}

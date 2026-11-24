@@ -1,4 +1,4 @@
-import assets from "./canopy-layers.json";
+import assets from "./canopy-assets.json";
 
 const [artWidth, artHeight] = assets.size;
 export const maxCanopyBend = 30;

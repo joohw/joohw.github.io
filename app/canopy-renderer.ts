@@ -4,7 +4,7 @@ import {
 } from "three";
 import { canopyFrame, edgeBend, maxCanopyBend } from "./canopy-frame";
 import { createLeafHitTest } from "./canopy-leaf-hit-test";
-import assets from "./canopy-layers.json";
+import assets from "./canopy-assets.json";
 import {
   backgroundFragmentShader, leafFragmentShader, leafOutlineFragmentShader, leafVertexShader,
   rippleFragmentShader, rippleVertexShader, sceneVertexShader,

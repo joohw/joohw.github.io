@@ -133,6 +133,71 @@
   filter: brightness(1.16);
 }
 
+.blog-scene-poster {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 78% 50%;
+}
+
+@media (min-width: 960px) {
+  .blog-scene-poster { object-position: 50% 50%; }
+}
+
+.canopy-loading {
+  position: fixed;
+  z-index: 35;
+  inset-inline-start: 50%;
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  width: min(23rem, calc(100% - 3rem));
+  transform: translateX(-50%);
+  color: rgb(224 235 247 / 0.92);
+  font-size: 0.75rem;
+  line-height: 1.5;
+  text-shadow: 0 1px 5px rgb(8 13 24 / 0.85);
+  pointer-events: none;
+  user-select: none;
+  transition: opacity 220ms ease;
+}
+
+.canopy-loading[data-fading="true"] { opacity: 0; }
+
+.canopy-loading-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.canopy-loading-percent {
+  flex: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.canopy-loading-track {
+  height: 2px;
+  margin-top: 0.375rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgb(218 232 248 / 0.2);
+  box-shadow: 0 1px 4px rgb(8 13 24 / 0.4);
+}
+
+.canopy-loading-fill {
+  display: block;
+  height: 100%;
+  transform-origin: left;
+  background: #dce9f6;
+  transition: transform 160ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .canopy-loading,
+  .canopy-loading-fill { transition: none; }
+}
+
 .blog-scroll[data-leaf-hover] { cursor: grab; }
 .blog-scroll[data-leaf-grabbed] {
   cursor: grabbing;
